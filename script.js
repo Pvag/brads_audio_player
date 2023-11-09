@@ -64,12 +64,30 @@ function togglePlay() {
   isPlaying() ? pauseSong() : playSong()
 }
 
-function plus10s() {
-  audio.currentTime += 10
+function plusNs(n) {
+  audio.currentTime += n
 }
 
-function minus10s() {
-  audio.currentTime -= 10
+function minusNs(n) {
+  audio.currentTime -= n
+}
+
+// set song current time by clicking on the progress bar
+function setProgress(event) {
+  const shiftX = event.offsetX
+  const progressWidth = this.clientWidth
+  const duration = audio.duration
+  const newTime = (shiftX / progressWidth) * duration
+
+  audio.currentTime = newTime
+}
+
+// update the progress bar while the song is playing
+function updateProgress(event) {
+  const { duration, currentTime } = event.srcElement
+  const progressPercent = (currentTime / duration) * 100
+
+  progress.style.width = `${progressPercent}%`
 }
 
 playBtn.addEventListener("click", () => {
@@ -78,6 +96,8 @@ playBtn.addEventListener("click", () => {
 
 nextBtn.addEventListener("click", nextSong)
 prevBtn.addEventListener("click", prevSong)
+
+progressContainer.addEventListener("click", setProgress)
 
 document.addEventListener("keydown", (event) => {
   switch (event.key) {
@@ -95,15 +115,24 @@ document.addEventListener("keydown", (event) => {
       prevSong()
       break
     case "l":
-      plus10s()
+      plusNs(10)
       break
     case "j":
-      minus10s()
+      minusNs(10)
+      break
+    case "ArrowRight":
+      plusNs(5)
+      break
+    case "ArrowLeft":
+      minusNs(5)
       break
     default:
       break
   }
 })
+
+audio.addEventListener("timeupdate", updateProgress)
+audio.addEventListener("ended", nextSong)
 
 async function loadSongsArray() {
   try {
